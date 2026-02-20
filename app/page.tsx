@@ -966,68 +966,178 @@ function ProductDetailTabs({ product, onEdit }: { product: EnrichedProduct; onEd
         </TabsContent>
 
         <TabsContent value="attributes" className="space-y-4">
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground font-semibold">Physical Attributes</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-              {product.attribute_data?.physical_attributes && Object.entries(product.attribute_data.physical_attributes).map(([key, val]) => (
-                <div key={key} className="p-3 bg-white/50 rounded-lg">
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{key}</p>
-                  <p className="text-sm font-medium mt-0.5">{val || '--'}</p>
+          <ScrollArea className="max-h-[500px]">
+            <div className="space-y-5 pr-3">
+              {/* Original Data from Upload */}
+              {product.originalData && Object.keys(product.originalData).length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
+                    <Label className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Original Product Data</Label>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {Object.entries(product.originalData).map(([key, val]) => (
+                      <div key={key} className="p-2.5 bg-muted/40 rounded-lg border border-border/50">
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{key.replace(/_/g, ' ')}</p>
+                        <p className="text-xs font-medium mt-0.5 break-words">{typeof val === 'string' ? val : JSON.stringify(val) || '--'}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-          {Array.isArray(product.attribute_data?.technical_specs) && product.attribute_data.technical_specs.length > 0 && (
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground font-semibold">Technical Specs</Label>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-xs">Spec</TableHead>
-                    <TableHead className="text-xs">Value</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {product.attribute_data.technical_specs.map((spec, i) => (
-                    <TableRow key={i}>
-                      <TableCell className="text-xs font-medium">{spec?.key ?? ''}</TableCell>
-                      <TableCell className="text-xs">{spec?.value ?? ''}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-          {Array.isArray(product.attribute_data?.variant_attributes) && product.attribute_data.variant_attributes.length > 0 && (
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground font-semibold">Variant Attributes</Label>
-              <div className="space-y-2">
-                {product.attribute_data.variant_attributes.map((variant, i) => (
-                  <div key={i} className="p-3 bg-white/50 rounded-lg">
-                    <p className="text-xs font-medium mb-1">{variant?.attribute ?? ''}</p>
-                    <div className="flex flex-wrap gap-1">
-                      {Array.isArray(variant?.options) && variant.options.map((opt, j) => (
-                        <Badge key={j} variant="outline" className="text-[10px]">{opt}</Badge>
-                      ))}
+              )}
+
+              {/* Physical Attributes */}
+              {product.attribute_data?.physical_attributes && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                    <Label className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Physical Attributes</Label>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                    {Object.entries(product.attribute_data.physical_attributes).map(([key, val]) => (
+                      <div key={key} className="p-3 bg-white/60 rounded-lg border border-border/30 shadow-sm">
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{key.replace(/_/g, ' ')}</p>
+                        <p className="text-sm font-medium mt-1 break-words">{typeof val === 'string' ? (val || '--') : JSON.stringify(val) || '--'}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Technical Specifications */}
+              {Array.isArray(product.attribute_data?.technical_specs) && product.attribute_data.technical_specs.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                    <Label className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Technical Specifications</Label>
+                    <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{product.attribute_data.technical_specs.length}</Badge>
+                  </div>
+                  <div className="bg-white/50 rounded-lg border border-border/30 overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-muted/30">
+                          <TableHead className="text-xs font-semibold w-[40%]">Specification</TableHead>
+                          <TableHead className="text-xs font-semibold">Value</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {product.attribute_data.technical_specs.map((spec, i) => (
+                          <TableRow key={i} className="hover:bg-white/30">
+                            <TableCell className="text-xs font-medium py-2">{spec?.key ?? ''}</TableCell>
+                            <TableCell className="text-xs py-2">{spec?.value ?? ''}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+
+              {/* Variant Attributes */}
+              {Array.isArray(product.attribute_data?.variant_attributes) && product.attribute_data.variant_attributes.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                    <Label className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Variant Attributes</Label>
+                    <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{product.attribute_data.variant_attributes.length}</Badge>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {product.attribute_data.variant_attributes.map((variant, i) => (
+                      <div key={i} className="p-3 bg-white/60 rounded-lg border border-border/30 shadow-sm">
+                        <p className="text-xs font-semibold mb-2 text-foreground">{variant?.attribute ?? `Variant ${i + 1}`}</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {Array.isArray(variant?.options) && variant.options.map((opt, j) => (
+                            <Badge key={j} variant="outline" className="text-[11px] px-2 py-0.5 bg-white/50">{opt}</Badge>
+                          ))}
+                          {(!Array.isArray(variant?.options) || variant.options.length === 0) && (
+                            <span className="text-xs text-muted-foreground">No options listed</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Additional Attributes */}
+              {Array.isArray(product.attribute_data?.additional_attributes) && product.attribute_data.additional_attributes.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    <Label className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Additional Attributes</Label>
+                    <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{product.attribute_data.additional_attributes.length}</Badge>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {product.attribute_data.additional_attributes.map((attr, i) => (
+                      <div key={i} className="p-2.5 bg-white/60 rounded-lg border border-border/30 shadow-sm">
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{attr?.key ?? ''}</p>
+                        <p className="text-xs font-medium mt-1 break-words">{attr?.value ?? '--'}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Catch-all: render any extra keys in attribute_data not already shown */}
+              {product.attribute_data && (() => {
+                const knownKeys = new Set(['physical_attributes', 'technical_specs', 'variant_attributes', 'additional_attributes'])
+                const extraKeys = Object.keys(product.attribute_data).filter(k => !knownKeys.has(k))
+                if (extraKeys.length === 0) return null
+                return (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+                      <Label className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Other Attributes</Label>
+                      <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{extraKeys.length}</Badge>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {extraKeys.map((key) => {
+                        const val = (product.attribute_data as any)[key]
+                        return (
+                          <div key={key} className="p-2.5 bg-white/60 rounded-lg border border-border/30 shadow-sm">
+                            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{key.replace(/_/g, ' ')}</p>
+                            <p className="text-xs font-medium mt-1 break-words">
+                              {typeof val === 'string' ? val : typeof val === 'number' ? String(val) : typeof val === 'boolean' ? (val ? 'Yes' : 'No') : Array.isArray(val) ? val.join(', ') : JSON.stringify(val)}
+                            </p>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {Array.isArray(product.attribute_data?.additional_attributes) && product.attribute_data.additional_attributes.length > 0 && (
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground font-semibold">Additional Attributes</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {product.attribute_data.additional_attributes.map((attr, i) => (
-                  <div key={i} className="p-2 bg-white/50 rounded-lg">
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{attr?.key ?? ''}</p>
-                    <p className="text-xs font-medium mt-0.5">{attr?.value ?? ''}</p>
+                )
+              })()}
+
+              {/* Summary count */}
+              {product.attribute_data && (
+                <div className="pt-2 border-t border-border/30">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                    <span className="font-medium">Total Attributes:</span>
+                    {product.attribute_data.physical_attributes && (
+                      <span>{Object.keys(product.attribute_data.physical_attributes).length} physical</span>
+                    )}
+                    {Array.isArray(product.attribute_data.technical_specs) && product.attribute_data.technical_specs.length > 0 && (
+                      <span>{product.attribute_data.technical_specs.length} technical</span>
+                    )}
+                    {Array.isArray(product.attribute_data.variant_attributes) && product.attribute_data.variant_attributes.length > 0 && (
+                      <span>{product.attribute_data.variant_attributes.length} variants</span>
+                    )}
+                    {Array.isArray(product.attribute_data.additional_attributes) && product.attribute_data.additional_attributes.length > 0 && (
+                      <span>{product.attribute_data.additional_attributes.length} additional</span>
+                    )}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
+
+              {/* Empty state */}
+              {!product.attribute_data && (
+                <div className="text-center py-10">
+                  <FiLayers className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-sm font-medium text-muted-foreground">No attributes extracted</p>
+                  <p className="text-xs text-muted-foreground/70 mt-1">Attribute extraction may not have been enabled for this product</p>
+                </div>
+              )}
             </div>
-          )}
+          </ScrollArea>
         </TabsContent>
 
         <TabsContent value="seo" className="space-y-4">
