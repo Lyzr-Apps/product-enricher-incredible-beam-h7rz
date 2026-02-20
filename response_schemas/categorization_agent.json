@@ -1,0 +1,19 @@
+{
+  "agent_name": "Categorization & Taxonomy Agent",
+  "agent_id": "6998637a9cb8e41088ffb376",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "type": "object",
+    "properties": {
+      "primary_category": { "type": "string" },
+      "taxonomy_path": { "type": "string" },
+      "secondary_categories": { "type": "array", "items": { "type": "string" } },
+      "tags": { "type": "array", "items": { "type": "string" } },
+      "product_type": { "type": "string" }
+    },
+    "required": ["primary_category", "taxonomy_path", "secondary_categories", "tags", "product_type"],
+    "additionalProperties": false
+  }
+}

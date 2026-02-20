@@ -1,0 +1,18 @@
+{
+  "agent_name": "Description & Copy Agent",
+  "agent_id": "6998637a9cb8e41088ffb374",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "type": "object",
+    "properties": {
+      "product_title": { "type": "string" },
+      "short_description": { "type": "string" },
+      "long_description": { "type": "string" },
+      "selling_points": { "type": "array", "items": { "type": "string" } }
+    },
+    "required": ["product_title", "short_description", "long_description", "selling_points"],
+    "additionalProperties": false
+  }
+}

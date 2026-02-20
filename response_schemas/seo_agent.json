@@ -1,0 +1,28 @@
+{
+  "agent_name": "SEO/AEO/GEO Optimizer Agent",
+  "agent_id": "6998637ad956b79390da1806",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "type": "object",
+    "properties": {
+      "meta_title": { "type": "string" },
+      "meta_description": { "type": "string" },
+      "faq_content": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": { "question": { "type": "string" }, "answer": { "type": "string" } },
+          "required": ["question", "answer"],
+          "additionalProperties": false
+        }
+      },
+      "json_ld_markup": { "type": "string" },
+      "rich_snippet_content": { "type": "string" },
+      "seo_score": { "type": "number" }
+    },
+    "required": ["meta_title", "meta_description", "faq_content", "json_ld_markup", "rich_snippet_content", "seo_score"],
+    "additionalProperties": false
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "agent_name": "Enrichment Coordinator",
+  "agent_id": "69986393d956b79390da180d",
+  "description": "Orchestrates all enrichment sub-agents, distributes product data to each specialist, and aggregates enriched results into a unified product record",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "product_name": "string",
+    "enrichment_status": "string",
+    "description_data": {
+      "product_title": "string",
+      "short_description": "string",
+      "long_description": "string",
+      "selling_points": [
+        "string"
+      ]
+    },
+    "categorization_data": {
+      "primary_category": "string",
+      "taxonomy_path": "string",
+      "secondary_categories": [
+        "string"
+      ],
+      "tags": [
+        "string"
+      ],
+      "product_type": "string"
+    },
+    "attribute_data": {
+      "physical_attributes": {
+        "dimensions": "string",
+        "weight": "string",
+        "size": "string",
+        "color": "string",
+        "material": "string"
+      },
+      "technical_specs": [
+        {
+          "key": "string",
+          "value": "string"
+        }
+      ],
+      "variant_attributes": [
+        {
+          "attribute": "string",
+          "options": [
+            "string"
+          ]
+        }
+      ],
+      "additional_attributes": [
+        {
+          "key": "string",
+          "value": "string"
+        }
+      ]
+    },
+    "seo_data": {
+      "meta_title": "string",
+      "meta_description": "string",
+      "faq_content": [
+        {
+          "question": "string",
+          "answer": "string"
+        }
+      ],
+      "json_ld_markup": "string",
+      "rich_snippet_content": "string",
+      "seo_score": "number"
+    }
+  },
+  "example_response": {
+    "product_name": "sample string",
+    "enrichment_status": "sample string",
+    "description_data": {
+      "product_title": "sample string",
+      "short_description": "sample string",
+      "long_description": "sample string",
+      "selling_points": [
+        "sample string"
+      ]
+    },
+    "categorization_data": {
+      "primary_category": "sample string",
+      "taxonomy_path": "sample string",
+      "secondary_categories": [
+        "sample string"
+      ],
+      "tags": [
+        "sample string"
+      ],
+      "product_type": "sample string"
+    },
+    "attribute_data": {
+      "physical_attributes": {
+        "dimensions": "sample string",
+        "weight": "sample string",
+        "size": "sample string",
+        "color": "sample string",
+        "material": "sample string"
+      },
+      "technical_specs": [
+        {
+          "key": "sample string",
+          "value": "sample string"
+        }
+      ],
+      "variant_attributes": [
+        {
+          "attribute": "sample string",
+          "options": [
+            "sample string"
+          ]
+        }
+      ],
+      "additional_attributes": [
+        {
+          "key": "sample string",
+          "value": "sample string"
+        }
+      ]
+    },
+    "seo_data": {
+      "meta_title": "sample string",
+      "meta_description": "sample string",
+      "faq_content": [
+        {
+          "question": "sample string",
+          "answer": "sample string"
+        }
+      ],
+      "json_ld_markup": "sample string",
+      "rich_snippet_content": "sample string",
+      "seo_score": 0
+    }
+  }
+}

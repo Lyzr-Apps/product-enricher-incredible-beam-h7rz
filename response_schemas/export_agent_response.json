@@ -1,0 +1,124 @@
+{
+  "agent_name": "Export Agent",
+  "agent_id": "699863a6c32baa328efdb2d7",
+  "description": "Formats approved enriched product data into structured export formats, packages all SEO markup and FAQ content for download",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "export_summary": {
+      "total_products": "number",
+      "enrichment_completeness": "number",
+      "missing_fields": [
+        "string"
+      ]
+    },
+    "csv_ready_data": [
+      {
+        "product_name": "string",
+        "product_title": "string",
+        "short_description": "string",
+        "long_description": "string",
+        "primary_category": "string",
+        "taxonomy_path": "string",
+        "tags": "string",
+        "color": "string",
+        "material": "string",
+        "size": "string",
+        "meta_title": "string",
+        "meta_description": "string",
+        "seo_score": "string",
+        "faq_content": "string",
+        "json_ld_markup": "string"
+      }
+    ],
+    "json_export_data": [
+      {
+        "product_name": "string",
+        "enrichment_status": "string",
+        "descriptions": {
+          "title": "string",
+          "short": "string",
+          "long": "string",
+          "selling_points": [
+            "string"
+          ]
+        },
+        "categorization": {
+          "primary": "string",
+          "taxonomy": "string",
+          "tags": [
+            "string"
+          ]
+        },
+        "seo": {
+          "meta_title": "string",
+          "meta_description": "string",
+          "seo_score": "number"
+        }
+      }
+    ]
+  },
+  "example_response": {
+    "export_summary": {
+      "total_products": 0,
+      "enrichment_completeness": 0,
+      "missing_fields": [
+        "sample string"
+      ]
+    },
+    "csv_ready_data": [
+      {
+        "product_name": "sample string",
+        "product_title": "sample string",
+        "short_description": "sample string",
+        "long_description": "sample string",
+        "primary_category": "sample string",
+        "taxonomy_path": "sample string",
+        "tags": "sample string",
+        "color": "sample string",
+        "material": "sample string",
+        "size": "sample string",
+        "meta_title": "sample string",
+        "meta_description": "sample string",
+        "seo_score": "sample string",
+        "faq_content": "sample string",
+        "json_ld_markup": "sample string"
+      }
+    ],
+    "json_export_data": [
+      {
+        "product_name": "sample string",
+        "enrichment_status": "sample string",
+        "descriptions": {
+          "title": "sample string",
+          "short": "sample string",
+          "long": "sample string",
+          "selling_points": [
+            "sample string"
+          ]
+        },
+        "categorization": {
+          "primary": "sample string",
+          "taxonomy": "sample string",
+          "tags": [
+            "sample string"
+          ]
+        },
+        "seo": {
+          "meta_title": "sample string",
+          "meta_description": "sample string",
+          "seo_score": 0
+        }
+      }
+    ]
+  },
+  "has_module_outputs": true,
+  "module_outputs_example": {
+    "artifact_files": [
+      {
+        "file_url": "https://example.com/file.pdf"
+      }
+    ]
+  }
+}

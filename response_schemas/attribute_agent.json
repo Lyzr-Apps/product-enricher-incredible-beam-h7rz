@@ -1,0 +1,56 @@
+{
+  "agent_name": "Attribute Extraction Agent",
+  "agent_id": "6998637aa60f376149e49221",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "type": "object",
+    "properties": {
+      "physical_attributes": {
+        "type": "object",
+        "properties": {
+          "dimensions": { "type": "string" },
+          "weight": { "type": "string" },
+          "size": { "type": "string" },
+          "color": { "type": "string" },
+          "material": { "type": "string" }
+        },
+        "required": ["dimensions", "weight", "size", "color", "material"],
+        "additionalProperties": false
+      },
+      "technical_specs": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": { "key": { "type": "string" }, "value": { "type": "string" } },
+          "required": ["key", "value"],
+          "additionalProperties": false
+        }
+      },
+      "variant_attributes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "attribute": { "type": "string" },
+            "options": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["attribute", "options"],
+          "additionalProperties": false
+        }
+      },
+      "additional_attributes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": { "key": { "type": "string" }, "value": { "type": "string" } },
+          "required": ["key", "value"],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": ["physical_attributes", "technical_specs", "variant_attributes", "additional_attributes"],
+    "additionalProperties": false
+  }
+}

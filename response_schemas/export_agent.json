@@ -1,0 +1,92 @@
+{
+  "agent_name": "Export Agent",
+  "agent_id": "699863a6c32baa328efdb2d7",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": true,
+  "response_schema": {
+    "type": "object",
+    "properties": {
+      "export_summary": {
+        "type": "object",
+        "properties": {
+          "total_products": { "type": "number" },
+          "enrichment_completeness": { "type": "number" },
+          "missing_fields": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["total_products", "enrichment_completeness", "missing_fields"],
+        "additionalProperties": false
+      },
+      "csv_ready_data": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "product_name": { "type": "string" },
+            "product_title": { "type": "string" },
+            "short_description": { "type": "string" },
+            "long_description": { "type": "string" },
+            "primary_category": { "type": "string" },
+            "taxonomy_path": { "type": "string" },
+            "tags": { "type": "string" },
+            "color": { "type": "string" },
+            "material": { "type": "string" },
+            "size": { "type": "string" },
+            "meta_title": { "type": "string" },
+            "meta_description": { "type": "string" },
+            "seo_score": { "type": "string" },
+            "faq_content": { "type": "string" },
+            "json_ld_markup": { "type": "string" }
+          },
+          "required": ["product_name", "product_title", "short_description", "long_description", "primary_category", "taxonomy_path", "tags", "color", "material", "size", "meta_title", "meta_description", "seo_score", "faq_content", "json_ld_markup"],
+          "additionalProperties": false
+        }
+      },
+      "json_export_data": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "product_name": { "type": "string" },
+            "enrichment_status": { "type": "string" },
+            "descriptions": {
+              "type": "object",
+              "properties": {
+                "title": { "type": "string" },
+                "short": { "type": "string" },
+                "long": { "type": "string" },
+                "selling_points": { "type": "array", "items": { "type": "string" } }
+              },
+              "required": ["title", "short", "long", "selling_points"],
+              "additionalProperties": false
+            },
+            "categorization": {
+              "type": "object",
+              "properties": {
+                "primary": { "type": "string" },
+                "taxonomy": { "type": "string" },
+                "tags": { "type": "array", "items": { "type": "string" } }
+              },
+              "required": ["primary", "taxonomy", "tags"],
+              "additionalProperties": false
+            },
+            "seo": {
+              "type": "object",
+              "properties": {
+                "meta_title": { "type": "string" },
+                "meta_description": { "type": "string" },
+                "seo_score": { "type": "number" }
+              },
+              "required": ["meta_title", "meta_description", "seo_score"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["product_name", "enrichment_status", "descriptions", "categorization", "seo"],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": ["export_summary", "csv_ready_data", "json_export_data"],
+    "additionalProperties": false
+  }
+}

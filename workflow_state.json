@@ -1,0 +1,29 @@
+{
+  "agents": {
+    "enrichment_coordinator": {
+      "agent_id": "69986393d956b79390da180d",
+      "type": "manager"
+    },
+    "description_agent": {
+      "agent_id": "6998637a9cb8e41088ffb374",
+      "type": "sub-agent"
+    },
+    "categorization_agent": {
+      "agent_id": "6998637a9cb8e41088ffb376",
+      "type": "sub-agent"
+    },
+    "attribute_agent": {
+      "agent_id": "6998637aa60f376149e49221",
+      "type": "sub-agent"
+    },
+    "seo_agent": {
+      "agent_id": "6998637ad956b79390da1806",
+      "type": "sub-agent"
+    },
+    "export_agent": {
+      "agent_id": "699863a6c32baa328efdb2d7",
+      "type": "independent",
+      "file_output": true
+    }
+  }
+}
