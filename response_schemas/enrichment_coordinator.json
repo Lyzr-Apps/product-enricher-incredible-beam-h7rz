@@ -9,15 +9,18 @@
     "properties": {
       "product_name": { "type": "string" },
       "enrichment_status": { "type": "string" },
+      "confidence_score": { "type": "number" },
       "description_data": {
         "type": "object",
         "properties": {
           "product_title": { "type": "string" },
           "short_description": { "type": "string" },
           "long_description": { "type": "string" },
-          "selling_points": { "type": "array", "items": { "type": "string" } }
+          "selling_points": { "type": "array", "items": { "type": "string" } },
+          "meta_keywords": { "type": "array", "items": { "type": "string" } },
+          "confidence_score": { "type": "number" }
         },
-        "required": ["product_title", "short_description", "long_description", "selling_points"],
+        "required": ["product_title", "short_description", "long_description", "selling_points", "meta_keywords", "confidence_score"],
         "additionalProperties": false
       },
       "categorization_data": {
@@ -27,9 +30,10 @@
           "taxonomy_path": { "type": "string" },
           "secondary_categories": { "type": "array", "items": { "type": "string" } },
           "tags": { "type": "array", "items": { "type": "string" } },
-          "product_type": { "type": "string" }
+          "product_type": { "type": "string" },
+          "confidence_score": { "type": "number" }
         },
-        "required": ["primary_category", "taxonomy_path", "secondary_categories", "tags", "product_type"],
+        "required": ["primary_category", "taxonomy_path", "secondary_categories", "tags", "product_type", "confidence_score"],
         "additionalProperties": false
       },
       "attribute_data": {
@@ -47,38 +51,12 @@
             "required": ["dimensions", "weight", "size", "color", "material"],
             "additionalProperties": false
           },
-          "technical_specs": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": { "key": { "type": "string" }, "value": { "type": "string" } },
-              "required": ["key", "value"],
-              "additionalProperties": false
-            }
-          },
-          "variant_attributes": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "attribute": { "type": "string" },
-                "options": { "type": "array", "items": { "type": "string" } }
-              },
-              "required": ["attribute", "options"],
-              "additionalProperties": false
-            }
-          },
-          "additional_attributes": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": { "key": { "type": "string" }, "value": { "type": "string" } },
-              "required": ["key", "value"],
-              "additionalProperties": false
-            }
-          }
+          "technical_specs": { "type": "array", "items": { "type": "object", "properties": { "key": { "type": "string" }, "value": { "type": "string" } }, "required": ["key", "value"], "additionalProperties": false } },
+          "variant_attributes": { "type": "array", "items": { "type": "object", "properties": { "attribute": { "type": "string" }, "options": { "type": "array", "items": { "type": "string" } } }, "required": ["attribute", "options"], "additionalProperties": false } },
+          "additional_attributes": { "type": "array", "items": { "type": "object", "properties": { "key": { "type": "string" }, "value": { "type": "string" } }, "required": ["key", "value"], "additionalProperties": false } },
+          "confidence_score": { "type": "number" }
         },
-        "required": ["physical_attributes", "technical_specs", "variant_attributes", "additional_attributes"],
+        "required": ["physical_attributes", "technical_specs", "variant_attributes", "additional_attributes", "confidence_score"],
         "additionalProperties": false
       },
       "seo_data": {
@@ -86,24 +64,17 @@
         "properties": {
           "meta_title": { "type": "string" },
           "meta_description": { "type": "string" },
-          "faq_content": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": { "question": { "type": "string" }, "answer": { "type": "string" } },
-              "required": ["question", "answer"],
-              "additionalProperties": false
-            }
-          },
+          "faq_content": { "type": "array", "items": { "type": "object", "properties": { "question": { "type": "string" }, "answer": { "type": "string" } }, "required": ["question", "answer"], "additionalProperties": false } },
           "json_ld_markup": { "type": "string" },
           "rich_snippet_content": { "type": "string" },
-          "seo_score": { "type": "number" }
+          "seo_score": { "type": "number" },
+          "confidence_score": { "type": "number" }
         },
-        "required": ["meta_title", "meta_description", "faq_content", "json_ld_markup", "rich_snippet_content", "seo_score"],
+        "required": ["meta_title", "meta_description", "faq_content", "json_ld_markup", "rich_snippet_content", "seo_score", "confidence_score"],
         "additionalProperties": false
       }
     },
-    "required": ["product_name", "enrichment_status", "description_data", "categorization_data", "attribute_data", "seo_data"],
+    "required": ["product_name", "enrichment_status", "confidence_score", "description_data", "categorization_data", "attribute_data", "seo_data"],
     "additionalProperties": false
   }
 }

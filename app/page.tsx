@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback, useRef, useMemo } from 'react'
+import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react'
 import { callAIAgent } from '@/lib/aiAgent'
 import { cn } from '@/lib/utils'
 
@@ -49,11 +49,14 @@ interface EnrichedProduct {
   status: 'enriched' | 'edited' | 'approved' | 'failed'
   product_name?: string
   enrichment_status?: string
+  confidence_score?: number
   description_data?: {
     product_title: string
     short_description: string
     long_description: string
     selling_points: string[]
+    meta_keywords: string[]
+    confidence_score: number
   }
   categorization_data?: {
     primary_category: string
@@ -61,6 +64,7 @@ interface EnrichedProduct {
     secondary_categories: string[]
     tags: string[]
     product_type: string
+    confidence_score: number
   }
   attribute_data?: {
     physical_attributes: {
@@ -73,6 +77,7 @@ interface EnrichedProduct {
     technical_specs: { key: string; value: string }[]
     variant_attributes: { attribute: string; options: string[] }[]
     additional_attributes: { key: string; value: string }[]
+    confidence_score: number
   }
   seo_data?: {
     meta_title: string
@@ -81,6 +86,7 @@ interface EnrichedProduct {
     json_ld_markup: string
     rich_snippet_content: string
     seo_score: number
+    confidence_score: number
   }
 }
 
@@ -93,104 +99,134 @@ function generateSampleProducts(): EnrichedProduct[] {
   return [
     {
       id: 'sample-1',
-      originalData: { name: 'Ergonomic Office Chair', sku: 'EOC-2024', price: '349.99' },
+      originalData: { nombre: 'Silla de Oficina Ergonomica', sku: 'EOC-2024', precio: '349.99', marca: 'ProComfort', ean: '8412345678901' },
       status: 'enriched',
-      product_name: 'Ergonomic Office Chair',
-      enrichment_status: 'complete',
+      product_name: 'Silla de Oficina Ergonomica ProComfort',
+      enrichment_status: 'completado',
+      confidence_score: 94,
       description_data: {
-        product_title: 'ProComfort Ergonomic Office Chair with Lumbar Support',
-        short_description: 'Premium ergonomic chair with adjustable lumbar support, breathable mesh back, and 4D armrests for all-day comfort.',
-        long_description: 'The ProComfort Ergonomic Office Chair is engineered for professionals who demand comfort during long work sessions. Featuring a contoured mesh backrest that promotes airflow, adjustable lumbar support that conforms to your spine, and 4D armrests that adapt to your preferred position. The chair includes a synchronized tilt mechanism with tension control and a waterfall seat edge to reduce pressure on your thighs.',
-        selling_points: ['Adjustable lumbar support system', 'Breathable mesh back design', '4D adjustable armrests', 'Synchronized tilt mechanism', '5-year warranty included']
+        product_title: 'Silla de Oficina Ergonomica ProComfort con Soporte Lumbar Ajustable',
+        short_description: 'Silla ergonomica premium con soporte lumbar ajustable, respaldo de malla transpirable y reposabrazos 4D para comodidad durante todo el dia.',
+        long_description: 'La Silla de Oficina Ergonomica ProComfort esta disenada para profesionales que exigen comodidad durante largas jornadas de trabajo. Cuenta con un respaldo de malla contorneado que promueve la circulacion de aire, soporte lumbar ajustable que se adapta a la columna vertebral y reposabrazos 4D que se ajustan a la posicion preferida. Incluye mecanismo de inclinacion sincronizado con control de tension y borde de asiento en cascada para reducir la presion en los muslos.',
+        selling_points: ['Sistema de soporte lumbar ajustable', 'Respaldo de malla transpirable', 'Reposabrazos ajustables 4D', 'Mecanismo de inclinacion sincronizado', 'Garantia de 5 anos incluida'],
+        meta_keywords: ['silla ergonomica', 'silla oficina', 'soporte lumbar', 'silla escritorio', 'silla malla', 'silla ajustable', 'teletrabajo', 'silla gaming', 'mobiliario oficina', 'silla postural', 'silla ejecutiva', 'ergonomia'],
+        confidence_score: 94
       },
       categorization_data: {
-        primary_category: 'Office Furniture',
-        taxonomy_path: 'Home & Garden > Furniture > Office Furniture > Office Chairs',
-        secondary_categories: ['Ergonomic Chairs', 'Desk Chairs'],
-        tags: ['ergonomic', 'office chair', 'lumbar support', 'mesh chair', 'adjustable', 'work from home'],
-        product_type: 'Task Chair'
+        primary_category: 'Mobiliario de Oficina',
+        taxonomy_path: 'Hogar y Jardin > Muebles > Mobiliario de Oficina > Sillas de Oficina',
+        secondary_categories: ['Sillas Ergonomicas', 'Sillas de Escritorio'],
+        tags: ['ergonomica', 'silla oficina', 'soporte lumbar', 'silla malla', 'ajustable', 'teletrabajo'],
+        product_type: 'Silla de Trabajo',
+        confidence_score: 95
       },
       attribute_data: {
-        physical_attributes: { dimensions: '27.5" W x 27" D x 44-48" H', weight: '42 lbs', size: 'Standard', color: 'Matte Black', material: 'Mesh & Nylon' },
-        technical_specs: [{ key: 'Weight Capacity', value: '300 lbs' }, { key: 'Seat Height Range', value: '17" - 21"' }, { key: 'Tilt Range', value: '90-120 degrees' }],
-        variant_attributes: [{ attribute: 'Color', options: ['Matte Black', 'Graphite Gray', 'Navy Blue'] }, { attribute: 'Headrest', options: ['With Headrest', 'Without Headrest'] }],
-        additional_attributes: [{ key: 'Assembly Required', value: 'Yes' }, { key: 'Caster Type', value: 'Dual-wheel carpet casters' }]
+        physical_attributes: { dimensions: '70 cm A x 68 cm P x 112-122 cm Al', weight: '19 kg', size: 'Estandar', color: 'Negro Mate', material: 'Malla y Nylon' },
+        technical_specs: [{ key: 'Capacidad de Peso', value: '136 kg' }, { key: 'Rango de Altura del Asiento', value: '43-53 cm' }, { key: 'Rango de Inclinacion', value: '90-120 grados' }],
+        variant_attributes: [{ attribute: 'Color', options: ['Negro Mate', 'Gris Grafito', 'Azul Marino'] }, { attribute: 'Reposacabezas', options: ['Con Reposacabezas', 'Sin Reposacabezas'] }],
+        additional_attributes: [{ key: 'Montaje Requerido', value: 'Si' }, { key: 'Tipo de Ruedas', value: 'Ruedas dobles para alfombra' }],
+        confidence_score: 92
       },
       seo_data: {
-        meta_title: 'Ergonomic Office Chair with Lumbar Support | ProComfort',
-        meta_description: 'Shop the ProComfort Ergonomic Office Chair featuring adjustable lumbar support, breathable mesh, and 4D armrests. Free shipping on orders over $299.',
-        faq_content: [{ question: 'What is the weight capacity?', answer: 'The ProComfort chair supports up to 300 lbs.' }, { question: 'Is assembly required?', answer: 'Yes, assembly typically takes 20-30 minutes with included tools.' }],
-        json_ld_markup: '{"@context":"https://schema.org","@type":"Product","name":"ProComfort Ergonomic Office Chair"}',
-        rich_snippet_content: 'ProComfort Ergonomic Office Chair - 4.7 stars, 1,249 reviews, $349.99',
-        seo_score: 87
+        meta_title: 'Silla de Oficina Ergonomica con Soporte Lumbar | ProComfort',
+        meta_description: 'Compra la Silla de Oficina Ergonomica ProComfort con soporte lumbar ajustable, malla transpirable y reposabrazos 4D. Envio gratis en pedidos superiores a 299 EUR.',
+        faq_content: [
+          { question: 'Cual es la capacidad de peso maxima?', answer: 'La silla ProComfort soporta hasta 136 kg de peso.' },
+          { question: 'Es necesario ensamblarla?', answer: 'Si, el ensamblaje suele tomar entre 20-30 minutos con las herramientas incluidas.' },
+          { question: 'Tiene garantia?', answer: 'Si, incluye garantia de 5 anos contra defectos de fabricacion.' }
+        ],
+        json_ld_markup: '{"@context":"https://schema.org","@type":"Product","name":"Silla de Oficina Ergonomica ProComfort","brand":{"@type":"Brand","name":"ProComfort"},"gtin13":"8412345678901"}',
+        rich_snippet_content: 'Silla Ergonomica ProComfort - 4.7 estrellas, 1,249 resenas, 349.99 EUR',
+        seo_score: 91,
+        confidence_score: 93
       }
     },
     {
       id: 'sample-2',
-      originalData: { name: 'Wireless Noise-Canceling Headphones', sku: 'WNC-500', price: '199.99' },
+      originalData: { nombre: 'Auriculares Inalambricos con Cancelacion de Ruido', sku: 'WNC-500', precio: '199.99', marca: 'SonicPure', ean: '8412345678918' },
       status: 'enriched',
-      product_name: 'Wireless Noise-Canceling Headphones',
-      enrichment_status: 'complete',
+      product_name: 'Auriculares Inalambricos SonicPure ANC 500',
+      enrichment_status: 'completado',
+      confidence_score: 96,
       description_data: {
-        product_title: 'SonicPure ANC 500 Wireless Noise-Canceling Headphones',
-        short_description: 'Premium wireless headphones with adaptive noise cancellation, 40-hour battery life, and Hi-Res Audio certification.',
-        long_description: 'Experience immersive audio with the SonicPure ANC 500. These premium wireless headphones feature adaptive noise cancellation that adjusts to your environment, delivering crystal-clear sound whether you are in a busy office or on a plane. With 40 hours of battery life, multipoint Bluetooth 5.3 connectivity, and Hi-Res Audio support, these headphones set a new standard for wireless listening.',
-        selling_points: ['Adaptive noise cancellation', '40-hour battery life', 'Hi-Res Audio certified', 'Multipoint Bluetooth 5.3', 'Foldable design with carry case']
+        product_title: 'SonicPure ANC 500 Auriculares Inalambricos con Cancelacion de Ruido Adaptativa',
+        short_description: 'Auriculares inalambricos premium con cancelacion de ruido adaptativa, 40 horas de bateria y certificacion Hi-Res Audio.',
+        long_description: 'Experimenta audio inmersivo con los SonicPure ANC 500. Estos auriculares inalambricos premium cuentan con cancelacion de ruido adaptativa que se ajusta automaticamente a tu entorno, ofreciendo un sonido cristalino ya sea en una oficina concurrida o en un avion. Con 40 horas de bateria, conectividad Bluetooth 5.3 multipunto y soporte Hi-Res Audio, estos auriculares establecen un nuevo estandar en audio inalambrico.',
+        selling_points: ['Cancelacion de ruido adaptativa', '40 horas de autonomia', 'Certificacion Hi-Res Audio', 'Bluetooth 5.3 multipunto', 'Diseno plegable con estuche'],
+        meta_keywords: ['auriculares inalambricos', 'cancelacion de ruido', 'bluetooth', 'ANC', 'audifonos', 'cascos inalambricos', 'audio hi-res', 'over-ear', 'musica', 'auriculares premium', 'SonicPure', 'noise cancelling'],
+        confidence_score: 96
       },
       categorization_data: {
-        primary_category: 'Electronics',
-        taxonomy_path: 'Electronics > Audio > Headphones > Over-Ear Headphones',
-        secondary_categories: ['Noise-Canceling Headphones', 'Wireless Headphones'],
-        tags: ['headphones', 'noise canceling', 'wireless', 'bluetooth', 'audio', 'ANC'],
-        product_type: 'Over-Ear Headphones'
+        primary_category: 'Electronica',
+        taxonomy_path: 'Electronica > Audio > Auriculares > Auriculares Over-Ear',
+        secondary_categories: ['Auriculares con Cancelacion de Ruido', 'Auriculares Inalambricos'],
+        tags: ['auriculares', 'cancelacion ruido', 'inalambricos', 'bluetooth', 'audio', 'ANC'],
+        product_type: 'Auriculares Over-Ear',
+        confidence_score: 97
       },
       attribute_data: {
-        physical_attributes: { dimensions: '7.5" x 6.5" x 3.2"', weight: '8.8 oz', size: 'One Size', color: 'Midnight Black', material: 'Premium Protein Leather & Aluminum' },
-        technical_specs: [{ key: 'Driver Size', value: '40mm' }, { key: 'Frequency Response', value: '4Hz - 40kHz' }, { key: 'Bluetooth Version', value: '5.3' }],
-        variant_attributes: [{ attribute: 'Color', options: ['Midnight Black', 'Silver Frost', 'Rose Gold'] }],
-        additional_attributes: [{ key: 'Charging', value: 'USB-C, 5-min charge = 3 hours playback' }, { key: 'Codec Support', value: 'LDAC, AAC, SBC' }]
+        physical_attributes: { dimensions: '19 x 16.5 x 8.1 cm', weight: '250 g', size: 'Talla Unica', color: 'Negro Medianoche', material: 'Cuero Proteina Premium y Aluminio' },
+        technical_specs: [{ key: 'Tamano del Driver', value: '40 mm' }, { key: 'Respuesta de Frecuencia', value: '4Hz - 40kHz' }, { key: 'Version Bluetooth', value: '5.3' }],
+        variant_attributes: [{ attribute: 'Color', options: ['Negro Medianoche', 'Plata Escarcha', 'Oro Rosa'] }],
+        additional_attributes: [{ key: 'Carga', value: 'USB-C, 5 min de carga = 3 horas de reproduccion' }, { key: 'Codecs', value: 'LDAC, AAC, SBC' }],
+        confidence_score: 95
       },
       seo_data: {
-        meta_title: 'SonicPure ANC 500 Wireless Noise-Canceling Headphones',
-        meta_description: 'SonicPure ANC 500 - Premium wireless headphones with adaptive noise cancellation and 40-hour battery. Hi-Res Audio certified. Shop now.',
-        faq_content: [{ question: 'How long does the battery last?', answer: 'Up to 40 hours with ANC on, 60 hours with ANC off.' }],
-        json_ld_markup: '{"@context":"https://schema.org","@type":"Product","name":"SonicPure ANC 500"}',
-        rich_snippet_content: 'SonicPure ANC 500 - 4.8 stars, 2,103 reviews, $199.99',
-        seo_score: 92
+        meta_title: 'SonicPure ANC 500 Auriculares Inalambricos con Cancelacion de Ruido',
+        meta_description: 'SonicPure ANC 500 - Auriculares inalambricos premium con cancelacion de ruido adaptativa y 40 horas de bateria. Certificacion Hi-Res Audio. Compra ahora.',
+        faq_content: [
+          { question: 'Cuanto dura la bateria?', answer: 'Hasta 40 horas con ANC activado, 60 horas con ANC desactivado.' },
+          { question: 'Son compatibles con multiples dispositivos?', answer: 'Si, soportan conexion Bluetooth 5.3 multipunto para conectarse a dos dispositivos simultaneamente.' },
+          { question: 'Incluyen estuche de transporte?', answer: 'Si, incluyen un estuche rigido de transporte con compartimento para el cable de carga.' }
+        ],
+        json_ld_markup: '{"@context":"https://schema.org","@type":"Product","name":"SonicPure ANC 500","brand":{"@type":"Brand","name":"SonicPure"},"gtin13":"8412345678918"}',
+        rich_snippet_content: 'SonicPure ANC 500 - 4.8 estrellas, 2,103 resenas, 199.99 EUR',
+        seo_score: 95,
+        confidence_score: 96
       }
     },
     {
       id: 'sample-3',
-      originalData: { name: 'Organic Green Tea Matcha', sku: 'OGT-100', price: '24.99' },
+      originalData: { nombre: 'Te Verde Matcha Organico', sku: 'OGT-100', precio: '24.99', marca: 'ZenLeaf', ean: '8412345678925' },
       status: 'enriched',
-      product_name: 'Organic Green Tea Matcha',
-      enrichment_status: 'complete',
+      product_name: 'Te Verde Matcha Organico Ceremonial ZenLeaf',
+      enrichment_status: 'completado',
+      confidence_score: 92,
       description_data: {
-        product_title: 'Ceremonial Grade Organic Matcha Green Tea Powder',
-        short_description: 'Premium Japanese ceremonial grade matcha, stone-ground from shade-grown leaves for a smooth, umami-rich flavor.',
-        long_description: 'Sourced from the renowned Uji region of Kyoto, Japan, our Ceremonial Grade Matcha is stone-ground from first-harvest shade-grown tea leaves. The result is a vibrant emerald green powder with a naturally sweet, umami-rich flavor and creamy texture. Perfect for traditional tea ceremonies, lattes, and smoothies. USDA Certified Organic and tested for purity.',
-        selling_points: ['Ceremonial grade from Uji, Kyoto', 'Stone-ground for fine texture', 'USDA Certified Organic', 'Rich in L-theanine and antioxidants', '30 servings per tin']
+        product_title: 'Te Matcha Organico Grado Ceremonial - Polvo de Te Verde Premium Japones',
+        short_description: 'Matcha japones grado ceremonial premium, molido en piedra a partir de hojas cultivadas a la sombra para un sabor suave y rico en umami.',
+        long_description: 'Procedente de la renombrada region de Uji en Kioto, Japon, nuestro Matcha Grado Ceremonial se muele en piedra a partir de hojas de te de primera cosecha cultivadas a la sombra. El resultado es un polvo verde esmeralda vibrante con un sabor naturalmente dulce, rico en umami y textura cremosa. Perfecto para ceremonias de te tradicionales, lattes y batidos. Certificado Organico y analizado para garantizar su pureza.',
+        selling_points: ['Grado ceremonial de Uji, Kioto', 'Molido en piedra para textura fina', 'Certificado Organico', 'Rico en L-teanina y antioxidantes', '30 porciones por lata'],
+        meta_keywords: ['matcha', 'te verde', 'organico', 'grado ceremonial', 'te japones', 'superalimento', 'matcha en polvo', 'antioxidantes', 'L-teanina', 'te Uji', 'matcha latte', 'te matcha premium'],
+        confidence_score: 92
       },
       categorization_data: {
-        primary_category: 'Food & Beverages',
-        taxonomy_path: 'Food & Beverages > Tea > Green Tea > Matcha',
-        secondary_categories: ['Organic Tea', 'Superfood Powders'],
-        tags: ['matcha', 'green tea', 'organic', 'ceremonial grade', 'Japanese tea', 'superfood'],
-        product_type: 'Tea Powder'
+        primary_category: 'Alimentos y Bebidas',
+        taxonomy_path: 'Alimentos y Bebidas > Te > Te Verde > Matcha',
+        secondary_categories: ['Te Organico', 'Superalimentos en Polvo'],
+        tags: ['matcha', 'te verde', 'organico', 'grado ceremonial', 'te japones', 'superalimento'],
+        product_type: 'Te en Polvo',
+        confidence_score: 93
       },
       attribute_data: {
-        physical_attributes: { dimensions: '3" x 3" x 4"', weight: '100g (3.5 oz)', size: '100g Tin', color: 'Emerald Green', material: 'N/A' },
-        technical_specs: [{ key: 'Origin', value: 'Uji, Kyoto, Japan' }, { key: 'Caffeine', value: '~70mg per serving' }],
-        variant_attributes: [{ attribute: 'Size', options: ['30g Starter', '100g Tin', '250g Bulk'] }],
-        additional_attributes: [{ key: 'Certifications', value: 'USDA Organic, Non-GMO, Vegan' }, { key: 'Shelf Life', value: '12 months from production' }]
+        physical_attributes: { dimensions: '7.6 x 7.6 x 10.2 cm', weight: '100g', size: 'Lata 100g', color: 'Verde Esmeralda', material: 'N/A' },
+        technical_specs: [{ key: 'Origen', value: 'Uji, Kioto, Japon' }, { key: 'Cafeina', value: '~70mg por porcion' }],
+        variant_attributes: [{ attribute: 'Tamano', options: ['30g Inicio', '100g Lata', '250g Granel'] }],
+        additional_attributes: [{ key: 'Certificaciones', value: 'Organico, Sin OGM, Vegano' }, { key: 'Vida Util', value: '12 meses desde produccion' }],
+        confidence_score: 91
       },
       seo_data: {
-        meta_title: 'Ceremonial Grade Organic Matcha - Premium Japanese Green Tea',
-        meta_description: 'Premium ceremonial grade matcha from Uji, Kyoto. Stone-ground, USDA organic, rich umami flavor. Perfect for lattes and traditional tea. Free shipping.',
-        faq_content: [{ question: 'What makes ceremonial grade different?', answer: 'Ceremonial grade matcha uses only the youngest, most tender tea leaves from the first harvest, resulting in a sweeter, more vibrant flavor.' }],
-        json_ld_markup: '{"@context":"https://schema.org","@type":"Product","name":"Ceremonial Grade Organic Matcha"}',
-        rich_snippet_content: 'Organic Matcha - 4.9 stars, 856 reviews, $24.99',
-        seo_score: 78
+        meta_title: 'Te Matcha Organico Grado Ceremonial - Te Verde Japones Premium',
+        meta_description: 'Matcha grado ceremonial premium de Uji, Kioto. Molido en piedra, certificado organico, sabor umami intenso. Perfecto para lattes y te tradicional. Envio gratis.',
+        faq_content: [
+          { question: 'Que diferencia al grado ceremonial?', answer: 'El matcha grado ceremonial utiliza solo las hojas mas jovenes y tiernas de la primera cosecha, resultando en un sabor mas dulce y vibrante.' },
+          { question: 'Como se prepara el matcha?', answer: 'Tamiza 1-2 gramos de matcha en un tazon, agrega 70ml de agua a 80 grados C y bate con un chasen (batidor de bambu) hasta obtener espuma.' },
+          { question: 'Cuantas porciones contiene?', answer: 'La lata de 100g contiene aproximadamente 30 porciones de matcha ceremonial.' }
+        ],
+        json_ld_markup: '{"@context":"https://schema.org","@type":"Product","name":"Te Matcha Organico Grado Ceremonial ZenLeaf","brand":{"@type":"Brand","name":"ZenLeaf"},"gtin13":"8412345678925"}',
+        rich_snippet_content: 'Matcha Organico ZenLeaf - 4.9 estrellas, 856 resenas, 24.99 EUR',
+        seo_score: 82,
+        confidence_score: 92
       }
     }
   ]
@@ -200,7 +236,7 @@ function generateSampleJobs(): Job[] {
   return [
     {
       id: 'job-sample-1',
-      name: 'electronics_catalog.csv',
+      name: 'catalogo_electronica.csv',
       productCount: 45,
       status: 'completed',
       date: '2026-02-18T14:30:00Z',
@@ -208,7 +244,7 @@ function generateSampleJobs(): Job[] {
     },
     {
       id: 'job-sample-2',
-      name: 'spring_collection.json',
+      name: 'coleccion_primavera.json',
       productCount: 120,
       status: 'completed',
       date: '2026-02-15T09:15:00Z',
@@ -216,7 +252,7 @@ function generateSampleJobs(): Job[] {
     },
     {
       id: 'job-sample-3',
-      name: 'kitchen_appliances.csv',
+      name: 'electrodomesticos_cocina.csv',
       productCount: 18,
       status: 'partial',
       date: '2026-02-10T16:45:00Z',
@@ -313,22 +349,30 @@ function getSeoScoreBg(score: number): string {
 function getStatusBadge(status: string) {
   switch (status) {
     case 'completed':
-      return <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">Completed</Badge>
+      return <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">Completado</Badge>
     case 'processing':
-      return <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100">Processing</Badge>
+      return <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100">Procesando</Badge>
     case 'failed':
-      return <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100">Failed</Badge>
+      return <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100">Fallido</Badge>
     case 'partial':
-      return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100">Partial</Badge>
+      return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100">Parcial</Badge>
     case 'enriched':
-      return <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">Enriched</Badge>
+      return <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">Enriquecido</Badge>
     case 'edited':
-      return <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100">Edited</Badge>
+      return <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100">Editado</Badge>
     case 'approved':
-      return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">Approved</Badge>
+      return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">Aprobado</Badge>
     default:
       return <Badge variant="secondary">{status}</Badge>
   }
+}
+
+function getConfidenceBadge(score: number | undefined) {
+  if (score == null) return null
+  const color = score >= 90 ? 'bg-green-100 text-green-700 border-green-200' :
+    score >= 70 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+    'bg-red-100 text-red-700 border-red-200'
+  return <Badge className={cn(color, 'text-xs font-semibold')}>{score}%</Badge>
 }
 
 // ============================================================
@@ -373,10 +417,10 @@ function Sidebar({ activeScreen, setActiveScreen, collapsed, setCollapsed }: {
   setCollapsed: (c: boolean) => void
 }) {
   const navItems: { id: ScreenType; label: string; icon: React.ReactNode }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: <FiHome className="w-5 h-5" /> },
-    { id: 'new-job', label: 'New Job', icon: <HiOutlinePlus className="w-5 h-5" /> },
-    { id: 'history', label: 'Job History', icon: <FiFileText className="w-5 h-5" /> },
-    { id: 'settings', label: 'Settings', icon: <FiSettings className="w-5 h-5" /> },
+    { id: 'dashboard', label: 'Panel', icon: <FiHome className="w-5 h-5" /> },
+    { id: 'new-job', label: 'Nuevo Trabajo', icon: <HiOutlinePlus className="w-5 h-5" /> },
+    { id: 'history', label: 'Historial', icon: <FiFileText className="w-5 h-5" /> },
+    { id: 'settings', label: 'Configuracion', icon: <FiSettings className="w-5 h-5" /> },
   ]
 
   return (
@@ -386,7 +430,7 @@ function Sidebar({ activeScreen, setActiveScreen, collapsed, setCollapsed }: {
           <FiBox className="w-4 h-4 text-primary-foreground" />
         </div>
         {!collapsed && (
-          <span className="font-semibold text-sm tracking-tight text-foreground truncate">Product Enrichment</span>
+          <span className="font-semibold text-sm tracking-tight text-foreground truncate">Enriquecimiento</span>
         )}
       </div>
 
@@ -424,7 +468,7 @@ function AppHeader({ title, sampleDataOn, setSampleDataOn }: { title: string; sa
       <h1 className="text-lg font-semibold tracking-tight text-foreground">{title}</h1>
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <Label htmlFor="sample-toggle" className="text-xs text-muted-foreground">Sample Data</Label>
+          <Label htmlFor="sample-toggle" className="text-xs text-muted-foreground">Datos de Ejemplo</Label>
           <Switch id="sample-toggle" checked={sampleDataOn} onCheckedChange={setSampleDataOn} />
         </div>
         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -476,47 +520,47 @@ function DashboardScreen({ jobs, setActiveScreen, setCurrentJob, setEnrichedProd
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-          <p className="text-sm text-muted-foreground mt-1">Overview of your product enrichment activity</p>
+          <h2 className="text-2xl font-bold tracking-tight">Panel</h2>
+          <p className="text-sm text-muted-foreground mt-1">Resumen de tu actividad de enriquecimiento de productos</p>
         </div>
         <Button onClick={() => setActiveScreen('new-job')} className="gap-2 rounded-xl">
           <HiOutlinePlus className="w-4 h-4" />
-          New Enrichment Job
+          Nuevo Trabajo
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard icon={<FiPackage className="w-5 h-5" />} label="Total Products" value={totalProducts} subtext="Across all jobs" />
-        <MetricCard icon={<BsArrowRepeat className="w-5 h-5" />} label="Active Jobs" value={activeJobs} subtext="Currently processing" />
-        <MetricCard icon={<FiTrendingUp className="w-5 h-5" />} label="Completion Rate" value={`${completionRate}%`} subtext={`${completedJobs} of ${displayJobs.length} jobs`} />
-        <MetricCard icon={<HiOutlineClock className="w-5 h-5" />} label="Avg Processing" value={displayJobs.length > 0 ? '~2.3s/product' : '--'} subtext="Per product" />
+        <MetricCard icon={<FiPackage className="w-5 h-5" />} label="Total Productos" value={totalProducts} subtext="En todos los trabajos" />
+        <MetricCard icon={<BsArrowRepeat className="w-5 h-5" />} label="Trabajos Activos" value={activeJobs} subtext="Procesando actualmente" />
+        <MetricCard icon={<FiTrendingUp className="w-5 h-5" />} label="Tasa de Completado" value={`${completionRate}%`} subtext={`${completedJobs} de ${displayJobs.length} trabajos`} />
+        <MetricCard icon={<HiOutlineClock className="w-5 h-5" />} label="Procesamiento Prom." value={displayJobs.length > 0 ? '~2.3s/producto' : '--'} subtext="Por producto" />
       </div>
 
       <Card className="backdrop-blur-md bg-white/75 border-white/20 shadow-md">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">Recent Jobs</CardTitle>
-          <CardDescription>Your latest enrichment runs</CardDescription>
+          <CardTitle className="text-base font-semibold">Trabajos Recientes</CardTitle>
+          <CardDescription>Tus ultimas ejecuciones de enriquecimiento</CardDescription>
         </CardHeader>
         <CardContent>
           {displayJobs.length === 0 ? (
             <div className="text-center py-16">
               <FiDatabase className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">No enrichment jobs yet</h3>
-              <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">Upload your first product catalog to get started with AI-powered product enrichment.</p>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Sin trabajos de enriquecimiento</h3>
+              <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">Sube tu primer catalogo de productos para comenzar con el enriquecimiento automatico con IA.</p>
               <Button onClick={() => setActiveScreen('new-job')} className="gap-2 rounded-xl">
                 <HiOutlineUpload className="w-4 h-4" />
-                Upload Catalog
+                Subir Catalogo
               </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Job Name</TableHead>
-                  <TableHead>Products</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Nombre del Trabajo</TableHead>
+                  <TableHead>Productos</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -525,7 +569,7 @@ function DashboardScreen({ jobs, setActiveScreen, setCurrentJob, setEnrichedProd
                     <TableCell className="font-medium text-sm">{job.name}</TableCell>
                     <TableCell className="text-sm">{job.productCount}</TableCell>
                     <TableCell>{getStatusBadge(job.status)}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{new Date(job.date).toLocaleDateString()}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{new Date(job.date).toLocaleDateString('es-ES')}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Button
@@ -578,9 +622,9 @@ function NewJobScreen({ uploadedFile, setUploadedFile, parsedProducts, setParsed
 
   const displayProducts = sampleDataOn && parsedProducts.length === 0
     ? [
-        { name: 'Ergonomic Office Chair', sku: 'EOC-2024', price: '349.99', brand: 'ProComfort' },
-        { name: 'Wireless Noise-Canceling Headphones', sku: 'WNC-500', price: '199.99', brand: 'SonicPure' },
-        { name: 'Organic Green Tea Matcha', sku: 'OGT-100', price: '24.99', brand: 'ZenLeaf' },
+        { nombre: 'Silla de Oficina Ergonomica', sku: 'EOC-2024', precio: '349.99', marca: 'ProComfort', ean: '8412345678901' },
+        { nombre: 'Auriculares Inalambricos ANC', sku: 'WNC-500', precio: '199.99', marca: 'SonicPure', ean: '8412345678918' },
+        { nombre: 'Te Verde Matcha Organico', sku: 'OGT-100', precio: '24.99', marca: 'ZenLeaf', ean: '8412345678925' },
       ]
     : parsedProducts
 
@@ -617,8 +661,8 @@ function NewJobScreen({ uploadedFile, setUploadedFile, parsedProducts, setParsed
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">New Enrichment Job</h2>
-        <p className="text-sm text-muted-foreground mt-1">Upload your product catalog and configure enrichment options</p>
+        <h2 className="text-2xl font-bold tracking-tight">Nuevo Trabajo de Enriquecimiento</h2>
+        <p className="text-sm text-muted-foreground mt-1">Sube tu catalogo de productos y configura las opciones de enriquecimiento</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -628,9 +672,9 @@ function NewJobScreen({ uploadedFile, setUploadedFile, parsedProducts, setParsed
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <HiOutlineUpload className="w-4 h-4 text-primary" />
-                Upload Catalog
+                Subir Catalogo
               </CardTitle>
-              <CardDescription>Drag and drop a CSV or JSON file</CardDescription>
+              <CardDescription>Arrastra y suelta un archivo CSV o JSON</CardDescription>
             </CardHeader>
             <CardContent>
               <div
@@ -642,9 +686,9 @@ function NewJobScreen({ uploadedFile, setUploadedFile, parsedProducts, setParsed
               >
                 <HiOutlineUpload className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
                 <p className="text-sm font-medium text-foreground mb-1">
-                  {uploadedFile ? uploadedFile.name : 'Drop your file here or click to browse'}
+                  {uploadedFile ? uploadedFile.name : 'Suelta tu archivo aqui o haz clic para explorar'}
                 </p>
-                <p className="text-xs text-muted-foreground">Supports CSV and JSON files</p>
+                <p className="text-xs text-muted-foreground">Admite archivos CSV y JSON</p>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -670,9 +714,9 @@ function NewJobScreen({ uploadedFile, setUploadedFile, parsedProducts, setParsed
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
                   <HiOutlineDocumentText className="w-4 h-4 text-primary" />
-                  File Preview
+                  Vista Previa
                 </CardTitle>
-                <CardDescription>{displayProducts.length} products detected across {columns.length} columns</CardDescription>
+                <CardDescription>{displayProducts.length} productos detectados en {columns.length} columnas</CardDescription>
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-64">
@@ -706,9 +750,9 @@ function NewJobScreen({ uploadedFile, setUploadedFile, parsedProducts, setParsed
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <BsGearFill className="w-4 h-4 text-primary" />
-                Enrichment Configuration
+                Configuracion de Enriquecimiento
               </CardTitle>
-              <CardDescription>Select which enrichment modules to apply</CardDescription>
+              <CardDescription>Selecciona los modulos de enriquecimiento a aplicar</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-3">
@@ -716,8 +760,8 @@ function NewJobScreen({ uploadedFile, setUploadedFile, parsedProducts, setParsed
                   <div className="flex items-center gap-3">
                     <HiOutlinePencil className="w-4 h-4 text-primary" />
                     <div>
-                      <Label className="text-sm font-medium">Descriptions</Label>
-                      <p className="text-xs text-muted-foreground">Generate product titles, short & long descriptions</p>
+                      <Label className="text-sm font-medium">Descripciones</Label>
+                      <p className="text-xs text-muted-foreground">Generar titulos, descripciones cortas y largas del producto</p>
                     </div>
                   </div>
                   <Switch checked={enrichmentConfig.descriptions} onCheckedChange={(v) => setEnrichmentConfig(prev => ({ ...prev, descriptions: v }))} />
@@ -727,8 +771,8 @@ function NewJobScreen({ uploadedFile, setUploadedFile, parsedProducts, setParsed
                   <div className="flex items-center gap-3">
                     <HiOutlineTag className="w-4 h-4 text-primary" />
                     <div>
-                      <Label className="text-sm font-medium">Categorization</Label>
-                      <p className="text-xs text-muted-foreground">Auto-categorize with taxonomy paths & tags</p>
+                      <Label className="text-sm font-medium">Categorizacion</Label>
+                      <p className="text-xs text-muted-foreground">Auto-categorizar con rutas de taxonomia y etiquetas</p>
                     </div>
                   </div>
                   <Switch checked={enrichmentConfig.categorization} onCheckedChange={(v) => setEnrichmentConfig(prev => ({ ...prev, categorization: v }))} />
@@ -738,8 +782,8 @@ function NewJobScreen({ uploadedFile, setUploadedFile, parsedProducts, setParsed
                   <div className="flex items-center gap-3">
                     <FiLayers className="w-4 h-4 text-primary" />
                     <div>
-                      <Label className="text-sm font-medium">Attributes</Label>
-                      <p className="text-xs text-muted-foreground">Extract physical, technical & variant attributes</p>
+                      <Label className="text-sm font-medium">Atributos</Label>
+                      <p className="text-xs text-muted-foreground">Extraer atributos fisicos, tecnicos y variantes</p>
                     </div>
                   </div>
                   <Switch checked={enrichmentConfig.attributes} onCheckedChange={(v) => setEnrichmentConfig(prev => ({ ...prev, attributes: v }))} />
@@ -750,7 +794,7 @@ function NewJobScreen({ uploadedFile, setUploadedFile, parsedProducts, setParsed
                     <FiTrendingUp className="w-4 h-4 text-primary" />
                     <div>
                       <Label className="text-sm font-medium">SEO / AEO / GEO</Label>
-                      <p className="text-xs text-muted-foreground">Meta tags, FAQ content, structured markup</p>
+                      <p className="text-xs text-muted-foreground">Meta tags, contenido FAQ, marcado estructurado</p>
                     </div>
                   </div>
                   <Switch checked={enrichmentConfig.seo} onCheckedChange={(v) => setEnrichmentConfig(prev => ({ ...prev, seo: v }))} />
@@ -761,9 +805,9 @@ function NewJobScreen({ uploadedFile, setUploadedFile, parsedProducts, setParsed
 
               <div className="space-y-3">
                 <div>
-                  <Label className="text-sm font-medium">Brand Tone & Voice</Label>
+                  <Label className="text-sm font-medium">Tono y Voz de Marca</Label>
                   <Textarea
-                    placeholder="e.g., Professional and compelling, with a focus on quality craftsmanship..."
+                    placeholder="Ej: Profesional y convincente, con enfoque en calidad artesanal..."
                     className="mt-2 rounded-xl"
                     rows={3}
                     value={enrichmentConfig.brandTone}
@@ -772,16 +816,16 @@ function NewJobScreen({ uploadedFile, setUploadedFile, parsedProducts, setParsed
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium">Category Taxonomy</Label>
+                  <Label className="text-sm font-medium">Taxonomia de Categorias</Label>
                   <Select value={enrichmentConfig.taxonomyPreference} onValueChange={(v) => setEnrichmentConfig(prev => ({ ...prev, taxonomyPreference: v }))}>
                     <SelectTrigger className="mt-2 rounded-xl">
-                      <SelectValue placeholder="Select taxonomy" />
+                      <SelectValue placeholder="Seleccionar taxonomia" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="auto">Auto-detect</SelectItem>
-                      <SelectItem value="google">Google Product Taxonomy</SelectItem>
-                      <SelectItem value="facebook">Facebook Commerce Taxonomy</SelectItem>
-                      <SelectItem value="custom">Custom Taxonomy</SelectItem>
+                      <SelectItem value="auto">Auto-detectar</SelectItem>
+                      <SelectItem value="google">Taxonomia de Productos Google</SelectItem>
+                      <SelectItem value="facebook">Taxonomia de Comercio Facebook</SelectItem>
+                      <SelectItem value="custom">Taxonomia Personalizada</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -795,7 +839,7 @@ function NewJobScreen({ uploadedFile, setUploadedFile, parsedProducts, setParsed
                 onClick={onStartEnrichment}
               >
                 <FiCpu className="w-4 h-4" />
-                Enrich Products
+                Enriquecer Productos
               </Button>
             </CardFooter>
           </Card>
@@ -823,31 +867,31 @@ function ProcessingScreen({ progress, total, completed, currentProduct }: {
           </div>
 
           <div>
-            <h2 className="text-xl font-bold tracking-tight">Enriching Products</h2>
-            <p className="text-sm text-muted-foreground mt-1">AI agents are processing your catalog</p>
+            <h2 className="text-xl font-bold tracking-tight">Enriqueciendo Productos</h2>
+            <p className="text-sm text-muted-foreground mt-1">Los agentes de IA estan procesando tu catalogo</p>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Progress</span>
+              <span className="text-muted-foreground">Progreso</span>
               <span className="font-semibold">{progress}%</span>
             </div>
             <Progress value={progress} className="h-3 rounded-full" />
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{completed} of {total} products</span>
-              <span>~{Math.max(0, (total - completed) * 3)}s remaining</span>
+              <span>{completed} de {total} productos</span>
+              <span>~{Math.max(0, (total - completed) * 3)}s restante</span>
             </div>
           </div>
 
           {currentProduct && (
             <div className="p-3 bg-secondary/50 rounded-xl">
-              <p className="text-xs text-muted-foreground">Currently processing</p>
+              <p className="text-xs text-muted-foreground">Procesando actualmente</p>
               <p className="text-sm font-medium mt-0.5 truncate">{currentProduct}</p>
             </div>
           )}
 
           <div className="grid grid-cols-4 gap-2">
-            {['Description', 'Category', 'Attributes', 'SEO'].map((agent) => (
+            {['Descripcion', 'Categoria', 'Atributos', 'SEO'].map((agent) => (
               <div key={agent} className="p-2 bg-secondary/50 rounded-lg text-center">
                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-1">
                   <BsCheckCircleFill className="w-3 h-3 text-primary" />
